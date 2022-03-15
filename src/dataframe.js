@@ -1,5 +1,0 @@
-class DataFrame {
-  constructor(data) {
-
-  }
-}

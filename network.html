@@ -1,0 +1,120 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 1920px;
+            height: 1080px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+        #config {
+            float: left;
+            width: 400px;
+            height: 600px;
+        }
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<div id = "config"></div>
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"color": "blue", "group": "sensors", "id": "S13", "label": "EBSW_40_10_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S49", "label": "CDL_KICKING_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S51", "label": "CDL_LADDERBOTTOM_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S0", "label": "open_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S14", "label": "CDL_2CROWS_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S58", "label": "CDL_MORNINGSTAR_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S21", "label": "CDL_ABANDONEDBABY_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S47", "label": "CDL_INSIDE_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S38", "label": "CDL_HANGINGMAN_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S4", "label": "volume_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S9", "label": "MACDh_12_26_9_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S64", "label": "CDL_SHOOTINGSTAR_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S2", "label": "low_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S73", "label": "CDL_UNIQUE3RIVER_normalized", "shape": "dot"}, {"color": "blue", "group": "sensors", "id": "S68", "label": "CDL_STICKSANDWICH_normalized", "shape": "dot"}, {"color": "gray", "group": "internals", "id": "I0", "label": "N0", "shape": "dot"}, {"color": "gray", "group": "internals", "id": "I2", "label": "N2", "shape": "dot"}, {"color": "gray", "group": "internals", "id": "I3", "label": "N3", "shape": "dot"}, {"color": "gray", "group": "internals", "id": "I1", "label": "N1", "shape": "dot"}, {"color": "red", "group": "actions", "id": "A0", "label": "Run", "shape": "dot"}]);
+        edges = new vis.DataSet([{"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S13", "title": -3.7225341796875, "to": "I0", "value": 0.930633544921875}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S49", "title": -1.1923828125, "to": "A0", "value": 0.298095703125}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S51", "title": 0.439453125, "to": "I2", "value": 0.10986328125}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S0", "title": -3.080810546875, "to": "A0", "value": 0.77020263671875}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S14", "title": 1.1373291015625, "to": "I0", "value": 0.284332275390625}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S58", "title": 3.753662109375, "to": "I2", "value": 0.93841552734375}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S21", "title": 2.3441162109375, "to": "A0", "value": 0.586029052734375}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S47", "title": 2.8685302734375, "to": "I0", "value": 0.717132568359375}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S38", "title": 2.8409423828125, "to": "A0", "value": 0.710235595703125}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S4", "title": -2.6917724609375, "to": "A0", "value": 0.672943115234375}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S4", "title": 1.7686767578125, "to": "I2", "value": 0.442169189453125}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S9", "title": 0.3150634765625, "to": "A0", "value": 0.078765869140625}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S64", "title": -0.202880859375, "to": "A0", "value": 0.05072021484375}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S2", "title": -3.2626953125, "to": "A0", "value": 0.815673828125}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "S73", "title": -0.34326171875, "to": "I3", "value": 0.0858154296875}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "S68", "title": 0.2587890625, "to": "A0", "value": 0.064697265625}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "I0", "title": 0.399169921875, "to": "I3", "value": 0.09979248046875}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "I2", "title": -0.293701171875, "to": "A0", "value": 0.07342529296875}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "I2", "title": -3.2183837890625, "to": "I3", "value": 0.804595947265625}, {"arrowStrikethrough": false, "arrows": "to", "color": "red", "from": "I3", "title": -3.535888671875, "to": "A0", "value": 0.88397216796875}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "I1", "title": 2.677734375, "to": "A0", "value": 0.66943359375}, {"arrowStrikethrough": false, "arrows": "to", "color": "green", "from": "I1", "title": 0.92431640625, "to": "I2", "value": 0.2310791015625}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": true
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "discrete"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+        // if this network requires displaying the configure window,
+        // put it in its div
+        options.configure["container"] = document.getElementById("config");
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>
