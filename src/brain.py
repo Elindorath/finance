@@ -19,8 +19,7 @@ initial_goods_count = 0
 threshold = 0.25
 
 class Brain:
-    def __init__(self, world: World, id: int = 0, genome_as_hex_string: str = '') -> None:
-        self.id = id
+    def __init__(self, world: World, genome_as_hex_string: str = '') -> None:
         self.accounts = {market.name: {'balance': initial_balance, 'goods_count': initial_goods_count, 'history': []} for market in world.markets}
         # self.balance = 30000 # TODO: config
         # self.goods_count = 0
@@ -75,7 +74,7 @@ class Brain:
         self.clean_up()
 
     def run(self, moment):
-        previous_balance = self.balance
+        # previous_balance = self.balance
 
         for id, sensor in self.sensors.items():
             sensor.sense(moment[self.sensors_type[id]])
@@ -86,7 +85,7 @@ class Brain:
         # for _, action in self.actions.items():
         #     action.run(self, moment)
 
-        return {action.id: action.run(moment) for action in self.actions.values()}
+        return {action.name: action.run() for action in self.actions.values()}
 
         self.balance_diffs.append(self.balance - previous_balance)
 

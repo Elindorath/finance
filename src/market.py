@@ -42,10 +42,13 @@ class Market:
         normalized_dataframe = pandas.DataFrame(x_scaled, columns=dataframe.columns, index=dataframe.index)
         normalized_dataframe = normalized_dataframe.add_suffix("_normalized")
 
-        self.dataframe = normalized_dataframe
+        normalized_dataframe = normalized_dataframe.join(dataframe['close'])
+
+        self.dataframe = normalized_dataframe.head(20).fillna(0)
+
         # self.dataframe = pandas.concat([dataframe, normalized_dataframe], axis=1)
         # self.dataframe.info(memory_usage="deep")
-        print(memory_size_format(self.dataframe.memory_usage(index=True, deep=True).sum()))
+        print(f'{self.name}: {memory_size_format(self.dataframe.memory_usage(index=True, deep=True).sum())}')
         # # print(sys.getsizeof(self.dataframe))
         # # time.sleep(10)
         # self.sensors_type = [column for column in self.dataframe.columns if "_normalized" in column]
@@ -53,7 +56,7 @@ class Market:
         # print(self.sensors_type)
 
     def reindex(self, index):
-        self.dataframe = self.dataframe.reindex(index)
+        self.dataframe = self.dataframe.reindex(index, fill_value=0)
 
     def __len__(self):
         return len(self.dataframe)

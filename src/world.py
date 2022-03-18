@@ -16,6 +16,9 @@ class World:
         for market in self.markets:
             market.reindex(index)
 
+        # print(self.markets[0].dataframe)
+        # print(self.markets[1].dataframe)
+
     def __iter__(self):
         return WorldIterator(self)
 
@@ -70,7 +73,8 @@ class WorldIterator:
 
     def __next__(self):
         if self._index < self._length:
-            moment = [market.dataframe.iloc[self._index] for market in self._world.markets]
+            moment = {market.name: market.dataframe.iloc[self._index] for market in self._world.markets}
+            # moment = [market.dataframe.iloc[self._index] for market in self._world.markets]
 
             self._index += 1
 

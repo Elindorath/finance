@@ -6,7 +6,8 @@ from world import World
 class Population:
     def __init__(self, source = '', world: World = []):
         self.actor_count = 1  # TODO: config
-        self.actors: list(Actor) = []
+        self.actors: dict[str, Actor] = {}
+        # self.actors: list[Actor] = []
         self.world = world
 
         if len(source) > 0:
@@ -15,29 +16,52 @@ class Population:
                 self.actor_count = len(lines)
 
                 for i in range(self.actor_count):
-                    self.actors.append(Actor(self.world, i, lines[i]))
+                    self.add_actor(genome_hex=lines[i])
+                    # self.actors.append(Actor(self.world, lines[i]))
         else:
-            for i in range(self.actor_count):
-                self.actors.append(Actor(self.world, i))
+            while len(self.actors) < self.actor_count:
+                # for i in range(self.actor_count):
+                self.add_actor()
+                # self.actors.append(Actor(self.world))
+
+    def add_actor(self, *, genome_hex: str='', should_mutate: bool=False):
+        actor = Actor(self.world, genome_hex)
+
+        if should_mutate:
+            actor.brain.genome.mutate(force=True)
+
+        self.actors[actor.brain.genome.hex_string] = actor
 
     def select(self):
-        sorted_list = sorted(self.actors, key=lambda x: x.balance)[int(len(self.actors) / 2):]
-        seen = {actor.genome.hex_string: actor for actor in sorted_list}
+        survivors = sorted(self.actors.values(), key=lambda actor: actor.balance)[len(self.actors) // 2:]
+        # sorted_list = sorted(self.actors, key=lambda x: x.balance)[len(self.actors) // 2:]
+        # seen = {actor.brain.genome.hex_string: actor for actor in sorted_list}
 
-        return list(seen.values())
+        self.actors = {actor.brain.genome.hex_string: actor for actor in survivors}
+        # self.actors = list(seen.values())
 
-    def reproduce(self, actors):
-        unique_count = len(actors)
-        self.actors = []
+        return self
 
-        for i in range(self.actor_count):
-            actor = Brain(self.world, i, actors[i % unique_count].genome.hex_string)
-            if (i >= unique_count):
-                actor.genome.mutate(i >= unique_count)
-            self.actors.append(actor)
+    def reproduce(self):
+        actors = sorted(self.actors.values(), key=lambda actor: actor.balance, reverse=True)
+
+        for actor in self.actors.values():
+            actor.initialize_accounts(self.world)
+
+        for i in range(self.actor_count - len(self)):
+            self.add_actor(genome_hex=actors[i].brain.genome.hex_string, should_mutate=True)
 
     def __iter__(self):
-        return self.actors.__iter__()
+        return self.actors.values().__iter__()
+
+    def __getitem__(self, key) -> Actor:
+        return sorted(self.actors.values(), key=lambda actor: actor.balance, reverse=True)[key]
+
+    def __len__(self):
+        return self.actors.__len__()
+
+    def __bool__(self):
+        return self.actors.__bool__()
 
 
         # actors = [*actors, *actors]

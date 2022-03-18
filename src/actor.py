@@ -8,7 +8,37 @@ initial_goods_count = 0
 threshold = 0.25
 
 class Actor:
-    def __init__(self, world: World, id: int, genome_as_hex_string: str) -> None:
+    def __init__(self, world: World, genome_as_hex_string: str='') -> None:
+        self.accounts = {}
+        self.initialize_accounts(world)
+        self.brain = Brain(world, genome_as_hex_string)
+
+    def run(self, moment):
+        for market_name, market_moment in moment.items():
+            # Notes: decisions = {action_id: percent}
+            decisions = self.brain.run(market_moment)
+
+            for action_id, decision in decisions.items():
+                self[action_id](decision, self.accounts[market_name], market_moment)
+
+            # print('=====================')
+            # print(self.accounts)
+            self.accounts[market_name]['history'].append(decisions)
+
+    def buy_or_sell(self, decision, account, market_moment):
+        percent = (abs(decision) - threshold) / (1 - threshold)
+
+        if market_moment.close != 0:
+            if decision > threshold:
+                budget = account['balance'] * percent
+                account['goods_count'] += budget / market_moment.close
+                account['balance'] -= budget
+            elif decision < -threshold:
+                quantity = account['goods_count'] * percent
+                account['balance'] += quantity * market_moment.close
+                account['goods_count'] -= quantity
+
+    def initialize_accounts(self, world: World):
         self.accounts = {
             market.name: {
                 'balance': initial_balance,
@@ -17,22 +47,13 @@ class Actor:
             }
             for market in world.markets
         }
-        self.brain = Brain(world)
 
-    def run(self, moment, market_id):
-        for market_moment in moment:
-            # Notes: decisions = {actionId: percent}
-            decisions = self.brain.run(market_moment)
+    @property
+    def balance(self):
+        return sum([account['balance'] for account in self.accounts.values()])
 
-            self.accounts[market_id].history.append(decisions)
-
-
-    def acts(self, time_slice):
-        for sensor in self.brain.sensors:
-            sensor.sense(time_slice[sensor.id])
-
-        for action in self.brain.actions:
-            action.output(self.state)
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 
 

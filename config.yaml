@@ -1,0 +1,9 @@
+actor-count: 2
+balance: 3000
+generation-count: 2
+goods: 0
+markets:
+- /home/elindorath/dev/finance/data/AAPL.csv
+- /home/elindorath/dev/finance/data/NKTR.csv
+max_neuron: 4
+trade-threshold: 0.25

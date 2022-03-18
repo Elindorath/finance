@@ -19,7 +19,7 @@ class Simulation:
         self.save_to = save_to
 
     def run(self):
-        max_generation = 1 # TODO: config
+        max_generation = 2 # TODO: config
         counter = 0
         # rows = min(len(self.world.dataframe.index), 5000)
         rows = 5000
@@ -31,10 +31,17 @@ class Simulation:
                 print(f"Starting generation {g}")
                 # results.append([])
 
-                # for actor in self.population:
-                for moment in self.world:
-                    print('====================')
-                    print(moment)
+                for actor in self.population:
+                    for moment in self.world:
+                        actor.run(moment)
+
+                if g < max_generation - 1:
+                    self.population.select()
+                    # print(f"Survivors balance's: {[survivor.balance for survivor in survivors]}")
+                    # print(f"Survivors genome's: {[survivor.genome.hex_string for survivor in survivors]}")
+                    self.population.reproduce()
+
+        print(self.population[0].balance)
 
         #         for timestamp, t in self.world.dataframe.head(rows).iterrows():
         #             # results.append([timestamp, t["close"]])

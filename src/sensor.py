@@ -18,6 +18,7 @@ class Sensor:
         self.connected_forward_to = {}
 
     def sense(self, input):
+        # print(input)
         for [next, weight] in self.connected_forward_to.values():
             next.receive(input * weight)
 

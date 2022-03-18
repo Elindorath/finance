@@ -38,7 +38,7 @@ Visualizer
   - Candle chart with orders
 
 Multi processing
-As the program is basically 3 imbricated loops, we can speed it up by spreading loops across multiple processes:
+As the program is basically 3 nested loops, we might speed it up by spreading iterations across multiple processes:
   - First loop : Generations are dependant of the previous one, so they only can be processed in linear order
   - Second loop: World is immutable during the whole process, making it a good candidate to be shared between processes
   - Third loop : Actors are immutable during a generation
@@ -64,6 +64,11 @@ To circumvent the overhead of process management, we need to ensure "enough work
 There are two ways to pass data between processes:
   - Shared ctypes objects (Value, Array, ...)
   - Shared_memory module
+
+Network based
+As relevant training runs might take a serious amount of time, we could stream the results during the process:
+  - A web interface that displays the results (could integrate a dashboard of metrics and some action buttons)
+  - A web server that serves the interface, launch training processes and bridge the processes results to the interface
 
 ===============
 
