@@ -1,9 +1,10 @@
 import time
 from contextlib import contextmanager
+from typing import ContextManager
 
 
 @contextmanager
-def timed_performance(prefix: str=None):
+def timed_performance(*, prefix: str = None) -> ContextManager[None]:
     start = time.perf_counter()
 
     try:

@@ -1,4 +1,8 @@
+from typing import Callable
+
 from sklearn import preprocessing
+
+from __typings import Market_moment, Decisions
 from genome import Genome
 # from neuron import Neuron_type
 from sensor import Sensor
@@ -13,52 +17,56 @@ Neuron_type = {
     'ACTION': 1,
 }
 
-max_internal_count = 4 # TODO: config
-initial_balance = 3000
-initial_goods_count = 0
-threshold = 0.25
-
 class Brain:
-    def __init__(self, world: World, genome_as_hex_string: str = '') -> None:
-        self.accounts = {market.name: {'balance': initial_balance, 'goods_count': initial_goods_count, 'history': []} for market in world.markets}
-        # self.balance = 30000 # TODO: config
-        # self.goods_count = 0
+
+    def __init__(
+        self,
+        *,
+        sensor_factory: Callable[..., Sensor],
+        internal_factory: Callable[..., Internal],
+        action_factory: Callable[..., Action],
+        genome_factory: Callable[..., Genome],
+        world: World,
+        genome_as_hex_string: str = '',
+        max_internal_neuron: int,
+    ) -> None:
         self.sensors_type = world.sensors_type
         self.sensors: dict[Sensor] = {}
         self.internals: dict[Internal] = {}
         self.actions: dict[Action] = {}
         self.balance_diffs = []
+        self.max_internal_neuron = max_internal_neuron
 
-        self.genome = Genome(genome_as_hex_string)
+        self.genome = genome_factory(hex_string=genome_as_hex_string)
 
         for gene in self.genome.genes:
             weight = gene.weight / 65536 * 8 - 4
 
             if gene.transmitter_type == Neuron_type['SENSOR']:
                 transmitter_id = gene.transmitter_id % len(self.sensors_type)
-                self.sensors[transmitter_id] = self.sensors.get(transmitter_id, False) or Sensor(transmitter_id)
+                self.sensors[transmitter_id] = self.sensors.get(transmitter_id, False) or sensor_factory(id=transmitter_id)
 
                 if gene.receiver_type == Neuron_type['INTERNAL_RECEIVER']:
-                    receiver_id = gene.receiver_id % max_internal_count
-                    self.internals[receiver_id] = self.internals.get(receiver_id, False) or Internal(receiver_id)
+                    receiver_id = gene.receiver_id % self.max_internal_neuron
+                    self.internals[receiver_id] = self.internals.get(receiver_id, False) or internal_factory(id=receiver_id)
                     self.sensors[transmitter_id].connect_forward(self.internals[receiver_id], weight)
                 elif gene.receiver_type == Neuron_type['ACTION']:
                     receiver_id = gene.receiver_id % len(Action.types)
-                    self.actions[receiver_id] = self.actions.get(receiver_id, False) or Action(receiver_id)
+                    self.actions[receiver_id] = self.actions.get(receiver_id, False) or action_factory(id=receiver_id)
                     self.sensors[transmitter_id].connect_forward(self.actions[receiver_id], weight)
                 else:
                     raise Exception
             elif gene.transmitter_type == Neuron_type['INTERNAL_TRANSMITTER']:
-                transmitter_id = gene.transmitter_id % max_internal_count
-                self.internals[transmitter_id] = self.internals.get(transmitter_id, False) or Internal(transmitter_id)
+                transmitter_id = gene.transmitter_id % self.max_internal_neuron
+                self.internals[transmitter_id] = self.internals.get(transmitter_id, False) or internal_factory(id=transmitter_id)
 
                 if gene.receiver_type == Neuron_type['INTERNAL_RECEIVER']:
-                    receiver_id = gene.receiver_id % max_internal_count
-                    self.internals[receiver_id] = self.internals.get(receiver_id, False) or Internal(receiver_id)
+                    receiver_id = gene.receiver_id % self.max_internal_neuron
+                    self.internals[receiver_id] = self.internals.get(receiver_id, False) or internal_factory(id=receiver_id)
                     self.internals[transmitter_id].connect_forward(self.internals[receiver_id], weight)
                 elif gene.receiver_type == Neuron_type['ACTION']:
                     receiver_id = gene.receiver_id % len(Action.types)
-                    self.actions[receiver_id] = self.actions.get(receiver_id, False) or Action(receiver_id)
+                    self.actions[receiver_id] = self.actions.get(receiver_id, False) or action_factory(id=receiver_id)
                     self.internals[transmitter_id].connect_forward(self.actions[receiver_id], weight)
                 else:
                     raise Exception
@@ -73,7 +81,7 @@ class Brain:
 
         self.clean_up()
 
-    def run(self, moment):
+    def run(self, moment: Market_moment) -> Decisions:
         # previous_balance = self.balance
 
         for id, sensor in self.sensors.items():
@@ -89,7 +97,7 @@ class Brain:
 
         self.balance_diffs.append(self.balance - previous_balance)
 
-    def clean_up(self):
+    def clean_up(self) -> None:
         neuron_has_been_removed = False
         internals_to_remove = []
         sensors_to_remove = []
@@ -119,7 +127,7 @@ class Brain:
         if neuron_has_been_removed:
             self.clean_up()
 
-    def remove_internal(self, id):
+    def remove_internal(self, id: int) -> None:
         for internal in self.internals.values():
             if id in internal.connected_forward_to:
                 del internal.connected_forward_to[id]
@@ -134,7 +142,7 @@ class Brain:
 
         del self.internals[id]
 
-    def remove_sensor(self, id):
+    def remove_sensor(self, id: int) -> None:
         del self.sensors[id]
 
 

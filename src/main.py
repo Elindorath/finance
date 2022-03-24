@@ -5,17 +5,19 @@ from world import World
 from population import Population
 from simulation import Simulation
 from sensor import Sensor
+from config import Config
 
 
-def main(world_source, population_source='', save_to='', config={}):
+def main(config: Config):
+    # def main(world_source, population_source='', save_to='', config={}):
     with timed_performance('World created'):
-        world = World(world_source)
+        world = World(config)
 
     with timed_performance('Population created'):
-        population = Population(population_source, world)
+        population = Population(world, config)
 
     with timed_performance('Simulation ran'):
-        simulation = Simulation(world, population, save_to)
+        simulation = Simulation(world, population, config)
 
         simulation.run()
 
@@ -48,6 +50,7 @@ if __name__ == '__main__':
 
     def warn_existing_file_path(file_path):
         from pathlib import Path
+
 
         error_message = ''
         absolute_path = Path.cwd().joinpath(file_path).resolve()
@@ -82,8 +85,8 @@ if __name__ == '__main__':
     )
 
     argument_group_world = parser.add_argument_group('world')
+    argument_group_simulation = parser.add_argument_group('simulation')
     argument_group_population = parser.add_argument_group('population')
-    argument_group_accounts = parser.add_argument_group('accounts')
     argument_group_configuration = parser.add_argument_group('configuration')
 
     argument_group_world.add_argument(
@@ -95,6 +98,24 @@ if __name__ == '__main__':
         metavar='MARKET_OHLCV_FILE_PATH',
         help='\n'.join([
             'List of file paths containing OHLCV market data',
+        ]),
+    )
+    argument_group_simulation.add_argument(
+        *['-g', '--generation-count'],
+        type=int,
+        default=2,
+        metavar='GENERATION_COUNT',
+        help='\n'.join([
+            'The number of generations',
+        ]),
+    )
+    argument_group_population.add_argument(
+        *['-n', '--actor-count'],
+        type=int,
+        default=2,
+        metavar='ACTOR_COUNT',
+        help='\n'.join([
+            'The number of actors per generation',
         ]),
     )
     argument_group_population.add_argument(
@@ -116,7 +137,7 @@ if __name__ == '__main__':
             'Overwrite the file if it exists',
         ]),
     )
-    parser.add_argument(
+    argument_group_population.add_argument(
         '--max_neuron',
         type=int,
         dest='max_internal_neuron',
@@ -126,7 +147,7 @@ if __name__ == '__main__':
             'Max internal neuron count per brain',
         ]),
     )
-    argument_group_accounts.add_argument(
+    argument_group_population.add_argument(
         '--balance',
         type=int,
         dest='initial_balance',
@@ -136,7 +157,7 @@ if __name__ == '__main__':
             'Initial balance for each market account of each actor',
         ]),
     )
-    argument_group_accounts.add_argument(
+    argument_group_population.add_argument(
         '--goods',
         type=int,
         dest='initial_goods_count',
@@ -146,7 +167,7 @@ if __name__ == '__main__':
             'Initial goods count for each market account of each actor',
         ]),
     )
-    parser.add_argument(
+    argument_group_population.add_argument(
         '--trade-threshold',
         type=float,
         dest='buy_or_sell_threshold',
@@ -157,28 +178,10 @@ if __name__ == '__main__':
             'Must be between 0 and 1'
         ]),
     )
-    parser.add_argument(
-        *['-n', '--actor-count'],
-        type=int,
-        default=2,
-        metavar='ACTOR_COUNT',
-        help='\n'.join([
-            'The number of actors per generation',
-        ]),
-    )
-    parser.add_argument(
-        *['-g', '--generation-count'],
-        type=int,
-        default=2,
-        metavar='GENERATION_COUNT',
-        help='\n'.join([
-            'The number of generations',
-        ]),
-    )
     argument_group_configuration.add_argument(
         *['-c', '--config-file'],
         type=existing_file_path,
-        dest="config_file",
+        dest='config_file',
         default=configargparse.SUPPRESS,
         metavar='IN_CONFIG_FILE_PATH',
         help='\n'.join([
@@ -189,7 +192,7 @@ if __name__ == '__main__':
     argument_group_configuration.add_argument(
         *['-w', '--write-config'],
         type=warn_existing_file_path,
-        dest="write_out_config_file_to_this_path",
+        dest='write_out_config_file_to_this_path',
         default=configargparse.SUPPRESS,
         metavar='OUT_CONFIG_FILE_PATH',
         help='\n'.join([
@@ -222,4 +225,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
+    # print(argument_group_world)
     # main(args.market_sources, args.population_source, args.save, config)

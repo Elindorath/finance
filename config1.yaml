@@ -1,0 +1,9 @@
+actor-count: '2'
+balance: '3000'
+generation-count: '3'
+goods: '0'
+markets:
+- ./data/AAPL.csv
+- ./data/NKTR.csv
+max_neuron: '5'
+trade-threshold: '0.25'

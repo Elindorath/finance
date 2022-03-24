@@ -1,24 +1,43 @@
-from pathlib import Path
-import logging
-import yaml
+from typing import TypedDict
 
 
-class Config:
-    def __init__(self, config_path: str='config.yaml'):
-        config_path = Path.cwd().joinpath(config_path).resolve(strict=True)
+class World_Config(TypedDict):
+    markets: list[str]
 
-        with open(config_path) as config_file:
-            config = yaml.load(config_file, Loader=yaml.Loader)
 
-        self.max_internal_neuron_count = 4
-        self.initial_balance = 3000
-        self.initial_goods_count = 0
-        self.buy_or_sell_threshold = 0.25
-        self.actor_count = 1
-        self.max_generation = 2
+class Simulation_Config(TypedDict):
+    generation_count: int
 
-        for key, value in config.items():
-            if not hasattr(self, key):
-                logging.warning(f'{key} is not a valid config parameter, ignoring it')
-            else:
-                setattr(self, key, value)
+class Population_Config(TypedDict):
+    actor_count: int
+    genomes: str
+    save_genomes: str
+    max_internal_neuron: int
+    initial_balance: int
+    initial_goods_count: int
+    buy_or_sell_threshold: float
+
+class Config_Config(TypedDict):
+    config_file: str
+    write_config: str
+
+class Config(World_Config, Simulation_Config, Population_Config, Config_Config):
+    pass
+
+# arguments_definition = {
+#     'markets': {
+#         'flags': '--markets',
+#         # 'type': existing_file_path,
+#         'tt': list[str],
+#         'nargs': '+',
+#         'required': True,
+#         # 'default': configargparse.SUPPRESS,
+#         'metavar': 'MARKET_OHLCV_FILE_PATH',
+#         'help': '\n'.join([
+#             'List of file paths containing OHLCV market data',
+#         ]),
+#     }
+# }
+# t = {name: arg['tt'] for name, arg in arguments_definition.items()}
+
+# Config = TypedDict('Config', t)

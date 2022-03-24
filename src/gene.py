@@ -1,4 +1,4 @@
-import random
+from typing import Any
 
 
 type_bit_count = 1
@@ -8,14 +8,15 @@ total_bit_count = type_bit_count * 2 + id_bit_count * 2 + weight_bit_count
 point_mutation_rate = 0.001
 
 class Gene:
-    def __init__(self, hex_string = "") -> None:
+    def __init__(self, *, random: Any, hex_string: str = '') -> None:
+        self.random = random
         self.transmitter_type = 0
         self.transmitter_id = 0
         self.receiver_type = 0
         self.receiver_id = 0
         self.weight = 0
-        self.hex_string = ""
-        self.bin_string = ""
+        self.hex_string = ''
+        self.bin_string = ''
 
         if len(hex_string) > 0:
             self.initialize_from_hex_string(hex_string)
@@ -39,12 +40,12 @@ class Gene:
     # def weight(self):
     #     return int(self.string[type_bit_count * 2 + id_bit_count * 2:], base=2)
 
-    def generate_random(self):
-        self.transmitter_type = random.getrandbits(type_bit_count)
-        self.transmitter_id = random.getrandbits(id_bit_count)
-        self.receiver_type = random.getrandbits(type_bit_count)
-        self.receiver_id = random.getrandbits(id_bit_count)
-        self.weight = random.getrandbits(weight_bit_count)
+    def generate_random(self) -> None:
+        self.transmitter_type = self.random.getrandbits(type_bit_count)
+        self.transmitter_id = self.random.getrandbits(id_bit_count)
+        self.receiver_type = self.random.getrandbits(type_bit_count)
+        self.receiver_id = self.random.getrandbits(id_bit_count)
+        self.weight = self.random.getrandbits(weight_bit_count)
 
         self.bin_string = bin(self.transmitter_type)[2:].zfill(type_bit_count) \
             + bin(self.transmitter_id)[2:].zfill(id_bit_count) \
@@ -54,7 +55,7 @@ class Gene:
 
         self.hex_string = hex(int(self.bin_string, base=2))[2:].zfill(int(total_bit_count / 4))
 
-    def initialize_from_hex_string(self, hex_string):
+    def initialize_from_hex_string(self, hex_string: str) -> None:
         self.hex_string = hex_string
         self.bin_string = bin(int(self.hex_string, base=16))[2:].zfill(total_bit_count)
 
@@ -69,10 +70,10 @@ class Gene:
         index += id_bit_count
         self.weight = int(self.bin_string[index:], base=2)
 
-    def random_bit_flip(self, force: bool = False):
-        if force or random.random() < point_mutation_rate:
+    def random_bit_flip(self, force: bool = False) -> None:
+        if force or self.random.random() < point_mutation_rate:
             # print("MUTATE")
-            bit_position = random.randint(0, total_bit_count - 1)
+            bit_position = self.random.randint(0, total_bit_count - 1)
             mask = 1 << bit_position
             self.initialize_from_hex_string(hex(int(self.bin_string, base=2) ^ mask)[2:].zfill(int(total_bit_count / 4)))
 

@@ -13,29 +13,29 @@ from action import Action
 
 
 class Simulation:
-    def __init__(self, world: World, population: Population, save_to=""):
+    def __init__(self, *, world: World, population: Population, generation_count: int, save_to: str) -> None:
         self.world = world
         self.population = population
         self.save_to = save_to
+        self.generation_count = generation_count
 
-    def run(self):
-        max_generation = 2 # TODO: config
+    def run(self) -> None:
         counter = 0
         # rows = min(len(self.world.dataframe.index), 5000)
         rows = 5000
 
         results = []
 
-        with timed_performance("Actors trained"):
-            for g in range(max_generation):
-                print(f"Starting generation {g}")
+        with timed_performance(prefix='Actors trained'):
+            for g in range(self.generation_count):
+                print(f'Starting generation {g}')
                 # results.append([])
 
                 for actor in self.population:
                     for moment in self.world:
                         actor.run(moment)
 
-                if g < max_generation - 1:
+                if g < self.generation_count - 1:
                     self.population.select()
                     # print(f"Survivors balance's: {[survivor.balance for survivor in survivors]}")
                     # print(f"Survivors genome's: {[survivor.genome.hex_string for survivor in survivors]}")
@@ -168,20 +168,6 @@ class Simulation:
         #             file.write(f"{actor.genome.hex_string}\n")
 
         #         print(f"Genomes saved to {self.save_to}")
-
-    def process_actor(self, world, actor):
-        rows = min(len(self.world.dataframe.index), 5000)
-
-        for timestamp, t in self.world.dataframe.head(rows).iterrows():
-            actor.run(t)
-
-        pass
-
-    def process_time_slice(self, actors, time_slice):
-        for actor in actors:
-            actor.run(time_slice)
-
-        pass
 
 
 

@@ -1,9 +1,7 @@
-import math
-import numpy
-# from brain import Brain
+from typing import Callable
 
+from __typings import Transmitter_neuron
 
-threshold = 0.25
 
 class Action:
     type = "Action"
@@ -11,19 +9,21 @@ class Action:
         "buy_or_sell",
     ]
 
-    def __init__(self, id) -> None:
+    def __init__(self, *, id: int, activation_function: Callable[[list[float]], float]) -> None:
         self.id = id
+        self.activation_function = activation_function
         self.name = Action.types[id]
         self.inputs = []
         # self.inputs = numpy.array([])
         self.connected_backward_to = {}
 
-    def receive(self, input):
+    def receive(self, input: float) -> None:
         # self.inputs = numpy.append(self.inputs, input)
         self.inputs.append(input)
 
-    def run(self):
-        output = math.tanh(sum(self.inputs))
+    def run(self) -> float:
+        output = self.activation_function(self.inputs)
+        # output = math.tanh(sum(self.inputs))
         # output = math.tanh(numpy.sum(self.inputs))
         # output = math.tanh(numpy.sum(numpy.array(self.inputs)))
         # percent = (abs(output) - threshold) / (1 - threshold)
@@ -47,5 +47,5 @@ class Action:
 
         # print(brain.balance, brain.goods_count)
 
-    def connect_backward(self, neuron, weight):
+    def connect_backward(self, neuron: Transmitter_neuron, weight: float) -> None:
         self.connected_backward_to[neuron.id] = [neuron, weight]

@@ -1,11 +1,16 @@
+from typing import Callable, Iterator, Iterable
+from pathlib import Path
+
 import pandas
-from pandas.tseries.offsets import DateOffset
-from market import Market
+
+from .market import Market
+from .__typings import Moment
 
 
-class World:
-    def __init__(self, sources):
-        self.markets = [Market(source) for source in sources]
+
+class World(Iterable[Moment]):
+    def __init__(self, *, market_factory: Callable[..., Market], markets: list[Path]) -> None:
+        self.markets = [market_factory(source=source) for source in markets]
         self.sensors_type = [column for column in self.markets[0].dataframe.columns if '_normalized' in column]
 
         start = min([market.dataframe.index[0] for market in self.markets])
@@ -19,7 +24,7 @@ class World:
         # print(self.markets[0].dataframe)
         # print(self.markets[1].dataframe)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Moment]:
         return WorldIterator(self)
 
         # column_names = [
@@ -65,13 +70,13 @@ class World:
 
 
 
-class WorldIterator:
-    def __init__(self, world: World):
+class WorldIterator(Iterator[Moment]):
+    def __init__(self, world: World) -> None:
         self._world = world
         self._index = 0
         self._length = min([len(market) for market in world.markets])
 
-    def __next__(self):
+    def __next__(self) -> Moment:
         if self._index < self._length:
             moment = {market.name: market.dataframe.iloc[self._index] for market in self._world.markets}
             # moment = [market.dataframe.iloc[self._index] for market in self._world.markets]
@@ -82,5 +87,5 @@ class WorldIterator:
 
         raise StopIteration
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Moment]:
         return self

@@ -1,19 +1,30 @@
+from typing import Any, Callable
+
+from __typings import Moment, Account, Market_moment
 from genome import Genome
 from brain import Brain
-from world import World
+from market import Market
 
-
-initial_balance = 3000
-initial_goods_count = 0
-threshold = 0.25
 
 class Actor:
-    def __init__(self, world: World, genome_as_hex_string: str='') -> None:
+    def __init__(
+        self,
+        *,
+        brain_factory: Callable[..., Brain],
+        markets: list[Market],
+        genome_as_hex_string: str = '',
+        initial_balance: int,
+        initial_goods_count: int,
+        buy_or_sell_threshold: float,
+    ) -> None:
+        self.initial_balance = initial_balance
+        self.initial_goods_count = initial_goods_count
+        self.buy_or_sell_threshold = buy_or_sell_threshold
         self.accounts = {}
-        self.initialize_accounts(world)
-        self.brain = Brain(world, genome_as_hex_string)
+        self.initialize_accounts(markets)
+        self.brain = brain_factory(genome_as_hex_string=genome_as_hex_string)
 
-    def run(self, moment):
+    def run(self, moment: Moment) -> None:
         for market_name, market_moment in moment.items():
             # Notes: decisions = {action_id: percent}
             decisions = self.brain.run(market_moment)
@@ -25,34 +36,34 @@ class Actor:
             # print(self.accounts)
             self.accounts[market_name]['history'].append(decisions)
 
-    def buy_or_sell(self, decision, account, market_moment):
-        percent = (abs(decision) - threshold) / (1 - threshold)
+    def buy_or_sell(self, decision: float, account: Account, market_moment: Market_moment) -> None:
+        percent = (abs(decision) - self.buy_or_sell_threshold) / (1 - self.buy_or_sell_threshold)
 
         if market_moment.close != 0:
-            if decision > threshold:
+            if decision > self.buy_or_sell_threshold:
                 budget = account['balance'] * percent
                 account['goods_count'] += budget / market_moment.close
                 account['balance'] -= budget
-            elif decision < -threshold:
+            elif decision < -self.buy_or_sell_threshold:
                 quantity = account['goods_count'] * percent
                 account['balance'] += quantity * market_moment.close
                 account['goods_count'] -= quantity
 
-    def initialize_accounts(self, world: World):
+    def initialize_accounts(self, markets: list[Market]):
         self.accounts = {
             market.name: {
-                'balance': initial_balance,
-                'goods_count': initial_goods_count,
+                'balance': self.initial_balance,
+                'goods_count': self.initial_goods_count,
                 'history': []
             }
-            for market in world.markets
+            for market in markets
         }
 
     @property
-    def balance(self):
+    def balance(self) -> float:
         return sum([account['balance'] for account in self.accounts.values()])
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 
 
